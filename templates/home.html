@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Prediction - Velvet Rides</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            height: 100vh;
+            overflow: hidden;
+            width: 100vw;
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+            position: relative;
+        }
+
+     
+
+        
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+        }
+
+        .image {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            position: absolute;
+            z-index: 3;
+            height: 80px;
+            width: 80px;
+            border-radius: 50%;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: pulse 2s infinite;
+        }
+
+        .image:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); }
+            50% { box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
+            100% { box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); }
+        }
+
+        main {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 3rem 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            animation: slideIn 1s ease-out;
+            min-width: 300px;
+            max-width: 90vw;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -40%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        h2 {
+            color: white;
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            text-decoration: none;
+            border-bottom: 3px solid #ff6b6b;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease-out 0.3s both;
+            transition: all 0.3s ease;
+        }
+
+        h2:hover {
+            color: #ff6b6b;
+            transform: translateY(-2px);
+            border-bottom-color: white;
+        }
+
+        h1 {
+            color: white;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-weight: bold;
+            margin-top: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease-out 0.6s both;
+            transition: all 0.3s ease;
+        }
+
+        h1:hover {
+            transform: scale(1.05);
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        form {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            animation: fadeIn 1s ease-out 1s both;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 1rem 3rem;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            font-weight: bold;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            min-width: 150px;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        button:active {
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .image {
+                height: 60px;
+                width: 60px;
+                font-size: 18px;
+                top: 15px;
+                left: 15px;
+            }
+
+            main {
+                padding: 2rem 1.5rem;
+                margin: 0 1rem;
+            }
+
+            h2 {
+                margin-bottom: 0.8rem;
+            }
+
+            h1 {
+                margin-top: 1.5rem;
+            }
+
+            button {
+                padding: 0.8rem 2rem;
+                margin: 0 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .image {
+                height: 50px;
+                width: 50px;
+                font-size: 16px;
+                top: 10px;
+                left: 10px;
+            }
+
+            main {
+                padding: 1.5rem 1rem;
+            }
+
+            h2:first-of-type {
+                margin-bottom: 0.5rem;
+            }
+
+            h1 {
+                margin-top: 1rem;
+            }
+
+            form {
+                bottom: 8%;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            body {
+                background: #000;
+            }
+            
+            main {
+                background: rgba(255, 255, 255, 0.9);
+                color: #000;
+            }
+            
+            h1, h2 {
+                color: #000;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        button:focus,
+        .image:focus {
+            outline: 3px solid #ffff00;
+            outline-offset: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+
+    <main>
+        
+        <h2>TRAFFIC PREDICTION</h2>
+        
+        <h1>BY VELVET RIDES</h1>
+    </main>
+    
+    <form action="/train">
+        <button type="submit" aria-label="Start traffic prediction">START</button>
+    </form>
+
+    <script>
+        

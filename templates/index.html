@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velvet Rides - Dynamic Weather Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+            background-attachment: fixed;
+            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 1s ease-in-out;
+            position: relative;
+        }
+
+        /* Dynamic weather overlay */
+        .weather-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.3;
+            transition: all 1s ease-in-out;
+            pointer-events: none;
+        }
+
+        /* Animated particles for weather effects */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: weatherFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes weatherFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.8; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.4; }
+        }
+
+        .image {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            position: absolute;
+            z-index: 3;
+            left: 20px;
+            top: 20px;
+            height: 120px;
+            width: 120px;
+            background-size: 100% 100%;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: logoGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes logoGlow {
+            0% { box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3); }
+            100% { box-shadow: 0 15px 35px rgba(255, 107, 107, 0.5); }
+        }
+
+        .image:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        main {
+            position: relative;
+            z-index: 3;
+            padding: 2rem 0;
+            animation: slideDown 1.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            color: white;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            text-decoration: none;
+            border-bottom: 3px solid #ff6b6b;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+            margin: 1rem 0;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        h2:hover {
+            color: #ff6b6b;
+            transform: translateY(-3px);
+            border-bottom-color: white;
+        }
+
+        h1 {
+            color: white;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            font-weight: 800;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease-out 0.6s both;
+            transition: all 0.3s ease;
+        }
+
+        h1:hover {
+            transform: scale(1.05);
+            text-shadow: 5px 5px 15px rgba(0, 0, 0, 0.7);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        form {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            padding: 2.5rem;
+            margin: 2rem auto;
+            max-width: 1200px;
+            position: relative;
+            z-index: 3;
+            animation: formSlideIn 1.5s ease-out 0.5s both;
+        }
+
+        @keyframes formSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(100px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .form {
+            place-items: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-column-gap: 2rem;
+            grid-row-gap: 2rem;
+            height: auto;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .form > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1.8rem;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: cardFloat 0.8s ease-out;
+            animation-fill-mode: both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form > div::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .form > div:hover::before {
+            left: 100%;
+        }
+
+        .form > div:nth-child(1) { animation-delay: 0.1s; }
+        .form > div:nth-child(2) { animation-delay: 0.2s; }
+        .form > div:nth-child(3) { animation-delay: 0.3s; }
+        .form > div:nth-child(4) { animation-delay: 0.4s; }
+        .form > div:nth-child(5) { animation-delay: 0.5s; }
+        .form > div:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes cardFloat {
+            from {
+                opacity: 0;
+                transform: translateY(50px) rotateX(20deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) rotateX(0deg);
+            }
+        }
+
+        .form > div:hover {
+            transform: translateY(-8px) scale(1.03);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        label h2 {
+            color: white;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            max-width: 250px;
+            padding: 14px 18px;
+            margin: 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            border-color: #ff6b6b;
+            background: white;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.4);
+            transform: scale(1.05);
+        }
+
+        input:hover, select:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-2px);
+        }
+
+        .move {
+            display: grid;
+            place-items: center;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            animation: moveSlideIn 1s ease-out 1s both;
+        }
+
+        @keyframes moveSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .move > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1.8rem;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .move > div::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .move > div:hover::before {
+            left: 100%;
+        }
+
+        .move > div:hover {
+            transform: translateY(-8px) scale(1.03);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .moved input[type="submit"] {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 1.3rem 3.5rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            min-width: 200px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: buttonBounce 1.2s ease-out 1.5s both;
+        }
+
+        @keyframes buttonBounce {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) rotate(-10deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.1) rotate(5deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .moved input[type="submit"]::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .moved input[type="submit"]:hover::before {
+            left: 100%;
+        }
+
+        .moved input[type="submit"]:hover {
+            transform: translateY(-5px) scale(1.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .moved input[type="submit"]:active {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Weather-specific styling */
+        .weather-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            z-index: 100;
+            transition: all 0.5s ease;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .image {
+                height: 80px;
+                width: 80px;
+                font-size: 1.5rem;
+                left: 15px;
+                top: 15px;
+            }
+
+            form {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+
+            .form {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .move {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            input, select {
+                max-width: 100%;
+            }
+
+            .moved input[type="submit"] {
+                padding: 1rem 2.5rem;
+                font-size: 1.1rem;
+                width: 100%;
+            }
+
+            .weather-indicator {
+                top: 10px;
+                right: 10px;
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .image {
+                height: 60px;
+                width: 60px;
+                font-size: 1.2rem;
+                left: 10px;
+                top: 10px;
+            }
+
+            form {
+                padding: 1rem;
+            }
+
+            .form > div,
+            .move > div {
+                padding: 1.2rem;
+            }
+
+            label h2 {
+                font-size: 1rem;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            body {
+                background: #000;
+            }
+            
+            form {
+                background: rgba(255, 255, 255, 0.95);
+                color: #000;
+            }
+            
+            h1, h2, label h2 {
+                color: #fff;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Loading state */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading .moved input[type="submit"] {
+            background: linear-gradient(45deg, #999, #666);
+        }
+    </style>
+</head>
+<body>
+    <div class="weather-overlay" id="weatherOverlay"></div>
+    <div class="particles" id="particles"></div>
+    <div class="weather-indicator" id="weatherIndicator">Select Weather</div>
+
+    <div>
+        <main>
+            
+            <h2>DRIVE WITH CONFIDENCE</h2>
+            <h1>VELVET RIDES</h1>
+        </main>
+
+        <form action="/predict" method="POST">
+            <div class="form">
+                <div>
+                    <label><h2>Date</h2></label>
+                    <input type="date" name="date" id="date"/>
+                </div>
+
+                <div>
+                    <label><h2>Day</h2></label>
+                    <select name="day" id="day" required>
+                        <option value="">Select Day</option>
+                        <option value="0">Sunday</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label><h2>Time</h2></label>
+                    <input type="time" name="time" id="time" required>
+                </div>
+
+                <div>
+                    <label><h2>Temperature</h2></label>
+                    <input type="number" name="temperature" id="temperature" placeholder="°C" required>
+                </div>
+
+                <div>
+                    <label><h2>Is Holiday</h2></label>
+                    <select name="is_holiday" id="is_holiday" required>
+                        <option value="">Select</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label><h2>Climate Condition</h2></label>
+                    <select name="x0" id="x0" onchange="fun(this)" required>
+                        <option value="">Select Weather</option>
+                        <option value="Clear">Clear</option>
+                        <option value="Clouds">Clouds</option>
+                        <option value="Drizzle">Drizzle</option>
+                        <option value="Fog">Fog</option>
+                        <option value="Haze">Haze</option>
+                        <option value="Mist">Mist</option>
+                        <option value="Rain">Rain</option>
+                        <option value="Smoke">Smoke</option>
+                        <option value="Snow">Snow</option>
+                        <option value="Squall">Squall</option>
+                        <option value="Thunderstorm">Thunderstorm</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="move">
+                <div>
+                    <label><h2>Weather Description</h2></label>
+                    <select name="x1" id="x1" required>
+                        <option value="">Select Description</option>
+                        <option value="SQUALLS">Squalls</option>
+                        <option value="Sky is Clear">Sky is Clear</option>
+                        <option value="broken clouds">Broken Clouds</option>
+                        <option value="drizzle">Drizzle</option>
+                        <option value="few clouds">Few Clouds</option>
+                        <option value="fog">Fog</option>
+                        <option value="freezing rain">Freezing Rain</option>
+                        <option value="haze">Haze</option>
+                        <option value="heavy intensity drizzle">Heavy Intensity Drizzle</option>
+                        <option value="heavy intensity rain">Heavy Intensity Rain</option>
+                        <option value="heavy snow">Heavy Snow</option>
+                        <option value="light intensity drizzle">Light Intensity Drizzle</option>
+                        <option value="light intensity shower rain">Light Intensity Shower Rain</option>
+                        <option value="light rain">Light Rain</option>
+                        <option value="light rain and snow">Light Rain and Snow</option>
+                        <option value="light shower snow">Light Shower Snow</option>
+                        <option value="light snow">Light Snow</option>
+                        <option value="mist">Mist</option>
+                        <option value="moderate rain">Moderate Rain</option>
+                        <option value="overcast clouds">Overcast Clouds</option>
+                        <option value="proximity shower rain">Proximity Shower Rain</option>
+                        <option value="proximity thunderstorm">Proximity Thunderstorm</option>
+                        <option value="proximity thunderstorm with drizzle">Proximity Thunderstorm with Drizzle</option>
+                        <option value="proximity thunderstorm with rain">Proximity Thunderstorm with Rain</option>
+                        <option value="scattered clouds">Scattered Clouds</option>
+                        <option value="shower snow">Shower Snow</option>
+                        <option value="sky is clear">Sky is Clear</option>
+                        <option value="sleet">Sleet</option>
+                        <option value="smoke">Smoke</option>
+                        <option value="snow">Snow</option>
+                        <option value="thunderstorm">Thunderstorm</option>
+                        <option value="thunderstorm with drizzle">Thunderstorm with Drizzle</option>
+                        <option value="thunderstorm with heavy rain">Thunderstorm with Heavy Rain</option>
+                        <option value="thunderstorm with light drizzle">Thunderstorm with Light Drizzle</option>
+                        <option value="thunderstorm with light rain">Thunderstorm with Light Rain</option>
+                        <option value="thunderstorm with rain">Thunderstorm with Rain</option>
+                        <option value="very heavy rain">Very Heavy Rain</option>
+                    </select>
+                </div>
+                <div class="moved">
+                    <input type="submit" value="Predict" class="btn btn-success"/>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function  fun(e){
+
+    console.log(e.value)
+let body=document.querySelector('body');
+if(e.value=="Haze"){
+body.style.background='url(giphy.gif)'
+body.style.backgroundSize='100% 100%'
+}
+    if (e.value == "Clear") {
+        body.style.background = 'url(clear.gif)'
+        body.style.backgroundSize = '100% 100%'
+    }
+    if (e.value == "Drizzle") {
+        body.style.background = 'url(Drizzle.gif)'
+        body.style.backgroundSize = '100% 100%'
+    }
+    if (e.value == "Fog") {
+        body.style.background = 'url(Fog.gif)'
+        body.style.backgroundSize = '100% 100%'
+    }
+    if (e.value == "Clouds") {
+        body.style.background = 'url(Clouds.gif)'
+        body.style.backgroundSize = '100% 100%'
+    }
+    if (e.value == "Mist") {
+        body.style.background = 'url(mist.jpeg)'
+        body.style.backgroundSize = '100% 100%'
+    }
+    if (e.value == "Rain") {
+        body.style.background = 'url(Rain.gif)'
+        body.style.backgroundSize = '100% 100%'
+    }
+    if (e.value == "Thunderstorm") {
+        body.style.background = 'url(Thunderstorm.gif)'
+        body.style.backgroundSize = '100% 100%'
+    
+    }
+    if (e.value == "Squall") {
+        body.style.background = 'url(squall.gif)'
+        body.style.backgroundSize = '100% 100%'
+    }
+    if (e.value == "Snow") {
+        body.style.background = 'url(snow.gif)'
+        body.style.backgroundSize = '100% 100%'
+    }
+    if (e.value == "Smoke") {
+        body.style.background = 'url(smoke.gif)'
+        body.style.backgroundSize = '100% 100%'
+    }
+}
+
+</script>
+
+{% block body %} {% endblock%}
+</body>
+</html>
+
